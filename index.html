@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UJIAN ONLINE YAYASAN DAARUSSALAAM</title>
+  <style>
+    :root {
+      --primary: #047857;
+      --primary-hover: #065f46;
+      --danger: #ef4444;
+      --success: #10b981;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-main: #0f172a;
+      --text-sub: #475569;
+    }
+
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    
+    body { 
+      background: linear-gradient(135deg, #064e3b 0%, #022c22 50%, #0f172a 100%);
+      background-attachment: fixed;
+      color: var(--text-main); 
+      margin: 0; 
+      padding: 16px 12px; 
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .container { width: 100%; max-width: 550px; margin: 0 auto; }
+    
+    /* Logo Branding */
+    .brand-logo {
+      width: 90px;
+      height: auto;
+      display: block;
+      margin: 0 auto 12px auto;
+      border-radius: 8px;
+    }
+
+    .brand-logo-small {
+      width: 35px;
+      height: auto;
+      vertical-align: middle;
+      margin-right: 8px;
+      border-radius: 4px;
+    }
+
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.12);
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: white;
+      margin-bottom: 15px;
+      backdrop-filter: blur(10px);
+    }
+    .btn-logout {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .card { 
+      background: var(--card-bg); 
+      padding: 24px; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); 
+      margin-bottom: 18px; 
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(8px);
+    }
+    h2, h3 { margin-top: 0; color: var(--text-main); font-weight: 700; }
+    
+    label { display: block; font-weight: 600; margin-top: 12px; margin-bottom: 6px; font-size: 14px; color: var(--text-sub); }
+    input[type="text"], input[type="password"], input[type="number"], textarea {
+      width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; margin-bottom: 8px;
+      outline: none; transition: 0.2s; background: #f8fafc;
+    }
+    input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.2); }
+
+    .option-item { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      margin: 10px 0; 
+      padding: 12px 14px; 
+      border: 1px solid #e2e8f0; 
+      border-radius: 12px; 
+      background: #ffffff; 
+      cursor: pointer; 
+    }
+    .option-item input[type="radio"] { accent-color: var(--primary); transform: scale(1.2); }
+
+    .btn { 
+      background: linear-gradient(135deg, #047857 0%, #065f46 100%); 
+      color: white; 
+      border: none; 
+      padding: 14px; 
+      width: 100%; 
+      border-radius: 10px; 
+      font-weight: 700; 
+      font-size: 15px; 
+      cursor: pointer; 
+      margin-top: 12px; 
+      box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3);
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+    .btn-success { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
+
+    .status-bar { 
+      display: flex; 
+      justify-content: space-between; 
+      background: rgba(239, 68, 68, 0.15); 
+      border: 1px solid rgba(239, 68, 68, 0.3); 
+      color: #fca5a5; 
+      padding: 12px 16px; 
+      border-radius: 12px; 
+      font-weight: 700; 
+      font-size: 14px; 
+      margin-bottom: 18px; 
+    }
+
+    .user-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    .user-table th, .user-table td { border: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+    .user-table th { background: #f1f5f9; }
+
+    .hidden { display: none !important; }
+    .badge { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- LAYAR LOGIN -->
+  <div id="login-screen" class="card" style="text-align: center;">
+    <img id="logo-img-login" class="brand-logo" alt="Logo Sekolah">
+    <h2 style="margin-bottom: 6px; color: var(--primary);">YAYASAN DAARUSSALAAM</h2>
+    <p style="margin-top: 0; color: var(--text-sub); font-weight: 600; font-size: 14px; margin-bottom: 20px;">UJIAN ONLINE (CBT)</p>
+    
+    <form onsubmit="handleLogin(event)" style="text-align: left;">
+      <label>Nama Siswa / Username:</label>
+      <input type="text" id="login-user" placeholder="Masukkan Nama Siswa..." required>
+
+      <label>Password Otomatis:</label>
+      <input type="password" id="login-pass" placeholder="Masukkan Password Otomatis..." required>
+
+      <button type="submit" class="btn">Masuk Ujian</button>
+    </form>
+
+    <div style="margin-top: 20px; font-size: 12px; color: var(--text-sub); background: #f1f5f9; padding: 12px; border-radius: 8px; text-align: left;">
+      <strong>Info Akun Guru / Pembuat Soal:</strong><br>
+      • Username: <code>admin</code> | Password: <code>123</code>
+    </div>
+  </div>
+
+  <!-- HEADER USER -->
+  <div id="app-header" class="user-header hidden">
+    <div>
+      <img id="logo-img-header" class="brand-logo-small" alt="Logo">
+      Halo, <strong id="logged-user-name">User</strong> (<span id="logged-user-role">Role</span>)
+    </div>
+    <button class="btn-logout" onclick="handleLogout()">Keluar</button>
+  </div>
+
+  <!-- MODE GURU -->
+  <div id="guru-screen" class="hidden">
+    <div class="card">
+      <h3>👤 Tambah Siswa Baru & Auto Password</h3>
+      <form onsubmit="tambahSiswa(event)">
+        <label>Nama Lengkap Siswa:</label>
+        <input type="text" id="input-nama-siswa" placeholder="Contoh: Budi Pratama" required>
+        
+        <button type="submit" class="btn btn-success">Daftarkan & Generate Password</button>
+      </form>
+
+      <div style="margin-top: 15px;">
+        <label>Daftar Akun Siswa Terdaftar:</label>
+        <div style="max-height: 180px; overflow-y: auto;">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>Nama Siswa</th>
+                <th>Password Otomatis</th>
+              </tr>
+            </thead>
+            <tbody id="siswa-list-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>⚙️ Tambah Soal Baru</h3>
+      <form id="form-buat-soal" onsubmit="tambahSoal(event)">
+        <label>Pertanyaan Soal:</label>
+        <textarea id="input-pertanyaan" rows="3" placeholder="Tuliskan soal di sini..." required></textarea>
+
+        <label>Bobot Nilai Soal:</label>
+        <input type="number" id="input-bobot" value="50" min="1" max="100" required>
+
+        <label>Pilihan Jawaban (Tandai Kunci Jawaban):</label>
+        
+        <div class="option-item">
+          <input type="radio" name="kunci" value="0" required checked>
+          <input type="text" id="opsi-0" placeholder="Pilihan A" required>
+        </div>
+        <div class="option-item">
+          <input type="radio" name="kunci" value="1">
+          <input type="text" id="opsi-1" placeholder="Pilihan B" required>
+        </div>
+        <div class="option-item">
+          <input type="radio" name="kunci" value="2">
+          <input type="text" id="opsi-2" placeholder="Pilihan C" required>
+        </div>
+        <div class="option-item">
+          <input type="radio" name="kunci" value="3">
+          <input type="text" id="opsi-3" placeholder="Pilihan D" required>
+        </div>
+
+        <button type="submit" class="btn">Simpan Soal ke Bank Soal</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>📚 Daftar Bank Soal (<span id="total-soal-count">0</span>)</h3>
+      <div id="daftar-soal-list"></div>
+      <button class="btn btn-danger" onclick="resetBankSoal()">Hapus Semua Soal</button>
+    </div>
+  </div>
+
+  <!-- MODE SISWA -->
+  <div id="siswa-screen" class="hidden">
+    <div class="status-bar">
+      <div>⏱️ Sisa Waktu: <span id="timer-display">05:00</span></div>
+      <div>⚠️ Pelanggaran: <span id="violation-count">0</span>x</div>
+    </div>
+
+    <div id="quiz-container"></div>
+
+    <button class="btn btn-success" onclick="submitUjian()">Selesaikan Ujian</button>
+  </div>
+
+  <!-- HASIL UJIAN -->
+  <div id="hasil-screen" class="hidden">
+    <div class="card" style="text-align: center; padding: 40px 20px;">
+      <h2>Hasil Ujian Anda</h2>
+      <p style="color: var(--text-sub);">Nilai Akhir yang Diperoleh:</p>
+      <div style="font-size: 64px; font-weight: 800; color: var(--success); margin: 10px 0;" id="score-display">0</div>
+      <p id="status-kelulusan" style="font-size: 18px;"></p>
+      <button class="btn" onclick="ulangiUjian()">Kerjakan Ulang</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const logoSekolah = "WhatsApp Image 2026-09-18 at 17.58.17.jpeg";
+
+  document.getElementById('logo-img-login').src = logoSekolah;
+  document.getElementById('logo-img-header').src = logoSekolah;
+
+  const defaultUsers = [
+    { name: 'Guru Admin', username: 'admin', pass: '123', role: 'guru' },
+    { name: 'Andi Pratama', username: 'Andi Pratama', pass: 'SISWA-1029', role: 'siswa' }
+  ];
+
+  const defaultBankSoal = [
+    { id: 1, pertanyaan: "Berapakah hasil dari 5 + 5 x 2?", bobot: 50, opsi: ["20", "15", "10", "25"], kunci: 1 },
+    { id: 2, pertanyaan: "Ibu kota negara Indonesia adalah...", bobot: 50, opsi: ["Surabaya", "Bandung", "Jakarta", "Medan"], kunci: 2 }
+  ];
+
+  let usersList = JSON.parse(localStorage.getItem('cbt_users')) || defaultUsers;
+  let bankSoal = JSON.parse(localStorage.getItem('cbt_bank_soal')) || defaultBankSoal;
+  let currentUser = null;
+  let jawabanSiswa = {};
+  let jumlahPelanggaran = 0;
+  let waktuDetik = 300;
+  let timerInterval = null;
+
+  function simpanUsers() {
+    localStorage.setItem('cbt_users', JSON.stringify(usersList));
+    renderDaftarSiswaGuru();
+  }
+
+  function generateAutoPassword() {
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    return `SISWA-${randomNum}`;
+  }
+
+  function tambahSiswa(e) {
+    e.preventDefault();
+    const namaInput = document.getElementById('input-nama-siswa').value.trim();
+    
+    if (!namaInput) return;
+
+    const autoPassword = generateAutoPassword();
+    const newStudent = {
+      name: namaInput,
+      username: namaInput,
+      pass: autoPassword,
+      role: 'siswa'
+    };
+
+    usersList.push(newStudent);
+    simpanUsers();
+
+    alert(`Siswa ${namaInput} berhasil didaftarkan!\nPassword Otomatis: ${autoPassword}`);
+    document.getElementById('input-nama-siswa').value = '';
+  }
+
+  function renderDaftarSiswaGuru() {
+    const tableBody = document.getElementById('siswa-list-table');
+    tableBody.innerHTML = '';
+
+    const siswaOnly = usersList.filter(u => u.role === 'siswa');
+    siswaOnly.forEach(s => {
+      tableBody.innerHTML += `
+        <tr>
+          <td><strong>${s.name}</strong></td>
+          <td><code>${s.pass}</code></td>
+        </tr>
+      `;
+    });
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const userInput = document.getElementById('login-user').value.trim().toLowerCase();
+    const passInput = document.getElementById('login-pass').value.trim();
+
+    const userFound = usersList.find(u => u.username.toLowerCase() === userInput && u.pass === passInput);
+
+    if (userFound) {
+      currentUser = userFound;
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-header').classList.remove('hidden');
+      document.getElementById('logged-user-name').innerText = currentUser.name;
+      document.getElementById('logged-user-role').innerText = currentUser.role.toUpperCase();
+
+      if (currentUser.role === 'guru') {
+        document.getElementById('guru-screen').classList.remove('hidden');
+        renderDaftarSiswaGuru();
+        renderDaftarSoalGuru();
+      } else {
+        document.getElementById('siswa-screen').classList.remove('hidden');
+        renderQuizSiswa();
+        startTimer();
+      }
+    } else {
+      alert('Nama Siswa atau Password Otomatis Salah!');
+    }
+  }
+
+  function handleLogout() {
+    clearInterval(timerInterval);
+    currentUser = null;
+    jawabanSiswa = {};
+    jumlahPelanggaran = 0;
+    
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('app-header').classList.add('hidden');
+    document.getElementById('guru-screen').classList.add('hidden');
+    document.getElementById('siswa-screen').classList.add('hidden');
+    document.getElementById('hasil-screen').classList.add('hidden');
+  }
+
+  function simpanBankSoal() {
+    localStorage.setItem('cbt_bank_soal', JSON.stringify(bankSoal));
+    renderDaftarSoalGuru();
+  }
+
+  function tambahSoal(e) {
+    e.preventDefault();
+    const pertanyaan = document.getElementById('input-pertanyaan').value;
+    const bobot = parseFloat(document.getElementById('input-bobot').value);
+    const kunciSelected = parseInt(document.querySelector('input[name="kunci"]:checked').value);
+    
+    const opsiArr = [
+      document.getElementById('opsi-0').value,
+      document.getElementById('opsi-1').value,
+      document.getElementById('opsi-2').value,
+      document.getElementById('opsi-3').value
+    ];
+
+    bankSoal.push({ id: Date.now(), pertanyaan, bobot, opsi: opsiArr, kunci: kunciSelected });
+    simpanBankSoal();
+    document.getElementById('form-buat-soal').reset();
+    alert('Soal berhasil ditambahkan!');
+  }
+
+  function renderDaftarSoalGuru() {
+    const container = document.getElementById('daftar-soal-list');
+    document.getElementById('total-soal-count').innerText = bankSoal.length;
+    container.innerHTML = '';
+
+    if (bankSoal.length === 0) {
+      container.innerHTML = '<p style="color:#64748b;">Belum ada soal.</p>';
+      return;
+    }
+
+    bankSoal.forEach((soal, idx) => {
+      container.innerHTML += `
+        <div style="border-bottom: 1px solid #e2e8f0; padding: 12px 0;">
+          <strong>#${idx + 1}. ${soal.pertanyaan}</strong> <span class="badge">Bobot: ${soal.bobot}</span>
+          <br><small style="color:var(--text-sub);">Kunci Jawaban: ${soal.opsi[soal.kunci]}</small>
+        </div>
+      `;
+    });
+  }
+
+  function resetBankSoal() {
+    if (confirm('Yakin ingin menghapus semua soal?')) {
+      bankSoal = [];
+      simpanBankSoal();
+    }
+  }
+
+  function renderQuizSiswa() {
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = '';
+
+    if (bankSoal.length === 0) {
+      container.innerHTML = '<div class="card"><p>Belum ada soal dari Guru.</p></div>';
+      return;
+    }
+
+    bankSoal.forEach((soal, idx) => {
+      let opsiHtml = '';
+      soal.opsi.forEach((opsiTeks, oIdx) => {
+        const isChecked = jawabanSiswa[soal.id] === oIdx ? 'checked' : '';
+        opsiHtml += `
+          <label class="option-item">
+            <input type="radio" name="soal_${soal.id}" value="${oIdx}" ${isChecked} onclick="pilihJawaban(${soal.id}, ${oIdx})">
+            ${opsiTeks}
+          </label>
+        `;
+      });
+
+      container.innerHTML += `
+        <div class="card">
+          <h4>${idx + 1}. ${soal.pertanyaan}</h4>
+          ${opsiHtml}
+        </div>
+      `;
+    });
+  }
+
+  function pilihJawaban(soalId, opsiIdx) {
+    jawabanSiswa[soalId] = opsiIdx;
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      waktuDetik--;
+      let menit = Math.floor(waktuDetik / 60);
+      let detik = waktuDetik % 60;
+      document.getElementById('timer-display').innerText = 
+        `${menit < 10 ? '0' : ''}${menit}:${detik < 10 ? '0' : ''}${detik}`;
+
+      if (waktuDetik <= 0) {
+        clearInterval(timerInterval);
+        alert('Waktu Ujian Telah Habis!');
+        submitUjian();
+      }
+    }, 1000);
+  }
+
+  document.addEventListener("visibilitychange", function() {
+    if (!document.getElementById('siswa-screen').classList.contains('hidden')) {
+      if (document.hidden) {
+        jumlahPelanggaran++;
+        document.getElementById('violation-count').innerText = jumlahPelanggaran;
+        alert(`PERINGATAN KECURANGAN!\nTerdeteksi keluar aplikasi/pindah tab!\nPelanggaran ke-${jumlahPelanggaran}`);
+
+        if (jumlahPelanggaran >= 3) {
+          alert('Ujian dihentikan otomatis karena melakukan kecurangan 3 kali.');
+          submitUjian();
+        }
+      }
+    }
+  });
+
+  function submitUjian() {
+    clearInterval(timerInterval);
+    let totalSkor = 0;
+
+    bankSoal.forEach((soal) => {
+      if (jawabanSiswa[soal.id] !== undefined && jawabanSiswa[soal.id] === soal.kunci) {
+        totalSkor += soal.bobot;
+      }
+    });
+
+    document.getElementById('siswa-screen').classList.add('hidden');
+    document.getElementById('hasil-screen').classList.remove('hidden');
+
+    document.getElementById('score-display').innerText = totalSkor;
+    const statusEl = document.getElementById('status-kelulusan');
+
+    if (totalSkor >= 70) {
+      statusEl.innerHTML = '<b style="color:var(--success)">Selamat! Anda LULUS Ujian.</b>';
+    } else {
+      statusEl.innerHTML = '<b style="color:var(--danger)">Maaf, Anda BELUM LULUS.</b>';
+    }
+  }
+
+  function ulangiUjian() {
+    jawabanSiswa = {};
+    jumlahPelanggaran = 0;
+    waktuDetik = 300;
+    document.getElementById('violation-count').innerText = 0;
+    document.getElementById('hasil-screen').classList.add('hidden');
+    document.getElementById('siswa-screen').classList.remove('hidden');
+    renderQuizSiswa();
+    startTimer();
+  }
+</script>
+
+</body>
+</html>
