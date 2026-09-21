@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CBT Pro - Sistem Ujian Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+
+  <!-- HEADER / NAVBAR TOP -->
+  <header id="main-header" class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50 hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center space-x-3">
+          <div class="p-2 bg-indigo-700 rounded-lg">
+            <i data-lucide="shield-check" class="w-6 h-6 text-indigo-200"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-lg leading-tight">CBT Pro System</h1>
+            <p class="text-xs text-indigo-300">Platform Ujian Online Terintegrasi</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav id="nav-menu" class="hidden md:flex space-x-1">
+          <!-- Populated dynamically via JavaScript based on user role -->
+        </nav>
+
+        <!-- User Info & Logout -->
+        <div class="flex items-center space-x-4">
+          <div class="text-right hidden sm:block">
+            <p id="user-display-name" class="text-sm font-semibold text-white">-</p>
+            <p id="user-display-role" class="text-xs text-indigo-300 capitalize">-</p>
+          </div>
+          <button onclick="handleLogout()" class="flex items-center space-x-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span>Keluar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ALERT NOTIFICATION BANNER -->
+  <div id="toast-container" class="fixed top-20 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==================== 0. HALAMAN LOGIN ==================== -->
+    <section id="page-login" class="max-w-md mx-auto my-12">
+      <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 p-8 text-center text-white">
+          <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+            <i data-lucide="graduation-cap" class="w-10 h-10 text-white"></i>
+          </div>
+          <h2 class="text-2xl font-bold">Portal Ujian CBT</h2>
+          <p class="text-indigo-200 text-sm mt-1">Silakan masuk dengan akun Anda</p>
+        </div>
+
+        <form id="form-login" onsubmit="handleLogin(event)" class="p-6 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Peran / Hak Akses</label>
+            <select id="login-role" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              <option value="admin">Administrator</option>
+              <option value="guru">Guru / Pengajar</option>
+              <option value="siswa" selected>Siswa / Peserta Ujian</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Username</label>
+            <div class="relative">
+              <i data-lucide="user" class="w-5 h-5 absolute left-3 top-2.5 text-slate-400"></i>
+              <input type="text" id="login-username" required placeholder="Masukkan username" class="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Kata Sandi</label>
+            <div class="relative">
+              <i data-lucide="key-round" class="w-5 h-5 absolute left-3 top-2.5 text-slate-400"></i>
+              <input type="password" id="login-password" required placeholder="Masukkan kata sandi" class="w-full border border-slate-300 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
+            <i data-lucide="log-in" class="w-5 h-5"></i>
+            <span>Masuk ke System</span>
+          </button>
+        </form>
+
+        <!-- Informasi Akun Default -->
+        <div class="bg-slate-50 border-t border-slate-200 p-4 text-xs text-slate-600">
+          <p class="font-bold text-slate-700 mb-2">Akun Default Sistem:</p>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-white p-2 rounded border border-slate-200">
+              <span class="font-bold block text-indigo-600">Admin</span>
+              <span>admin</span> / <span>admin123</span>
+            </div>
+            <div class="bg-white p-2 rounded border border-slate-200">
+              <span class="font-bold block text-emerald-600">Guru</span>
+              <span>guru</span> / <span>guru123</span>
+            </div>
+            <div class="bg-white p-2 rounded border border-slate-200">
+              <span class="font-bold block text-blue-600">Siswa</span>
+              <span>siswa</span> / <span>siswa123</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 1. HALAMAN ADMIN ==================== -->
+    <section id="page-admin" class="hidden space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Dashboard Administrator</h2>
+          <p class="text-slate-500 text-sm">Kelola pengguna, ekspor/impor data, dan pantau aktivitas sistem.</p>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="resetServerData()" class="bg-rose-100 text-rose-700 hover:bg-rose-200 px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 border border-rose-300">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            <span>Reset Data Server</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- User Management Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+          <h3 class="font-bold text-slate-700 flex items-center space-x-2">
+            <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
+            <span>Manajemen Pengguna</span>
+          </h3>
+          <button onclick="toggleUserModal(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Tambah User</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+              <tr>
+                <th class="p-3">Nama Lengkap</th>
+                <th class="p-3">Username</th>
+                <th class="p-3">Role</th>
+                <th class="p-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-users-body" class="divide-y divide-slate-200">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 2. HALAMAN GURU ==================== -->
+    <section id="page-guru" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center space-x-2">
+          <i data-lucide="file-plus-2" class="w-6 h-6 text-indigo-600"></i>
+          <span>Buat Paket Ujian Baru</span>
+        </h2>
+        <form id="form-exam" onsubmit="handleSaveExam(event)" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ujian</label>
+              <input type="text" id="exam-title" required placeholder="Contoh: UTS Semester 1" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mata Pelajaran</label>
+              <input type="text" id="exam-subject" required placeholder="Contoh: Matematika" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Durasi (Menit)</label>
+              <input type="number" id="exam-duration" required min="1" value="30" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 pt-4">
+            <h3 class="font-semibold text-slate-700 mb-2">Input Soal Pilihan Ganda</h3>
+            <div class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Pertanyaan Soal</label>
+                <textarea id="question-text" rows="2" placeholder="Tuliskan pertanyaan..." class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Pilihan A</label>
+                  <input type="text" id="opt-a" placeholder="Jawaban A" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Pilihan B</label>
+                  <input type="text" id="opt-b" placeholder="Jawaban B" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Pilihan C</label>
+                  <input type="text" id="opt-c" placeholder="Jawaban C" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Pilihan D</label>
+                  <input type="text" id="opt-d" placeholder="Jawaban D" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Kunci Jawaban Benar</label>
+                <select id="correct-opt" class="border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                  <option value="A">Pilihan A</option>
+                  <option value="B">Pilihan B</option>
+                  <option value="C">Pilihan C</option>
+                  <option value="D">Pilihan D</option>
+                </select>
+              </div>
+
+              <button type="button" onclick="addQuestionToList()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-1">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Tambah Soal ke Daftar</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Question List Preview -->
+          <div class="mt-4">
+            <h4 class="font-bold text-slate-700 mb-2">Daftar Soal Sementara (<span id="temp-q-count">0</span>):</h4>
+            <div id="temp-questions-list" class="space-y-2 max-h-48 overflow-y-auto">
+              <p class="text-slate-400 text-sm italic">Belum ada soal yang ditambahkan.</p>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-200">
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-bold flex items-center justify-center space-x-2 shadow-md">
+              <i data-lucide="save" class="w-5 h-5"></i>
+              <span>Simpan & Publikasikan Paket Ujian</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== 3. HALAMAN SISWA ==================== -->
+    <section id="page-siswa" class="hidden space-y-6">
+      <!-- Select Exam Panel -->
+      <div id="student-prep-panel" class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md border border-slate-200">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center space-x-2">
+          <i data-lucide="clipboard-list" class="w-6 h-6 text-indigo-600"></i>
+          <span>Pilih Paket Ujian</span>
+        </h2>
+        <form onsubmit="startExam(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Ujian Aktif</label>
+            <select id="student-exam-select" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              <!-- Rendered dynamically -->
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-bold shadow transition">
+            Mulai Kerjakan Ujian
+          </button>
+        </form>
+      </div>
+
+      <!-- Exam Active Panel -->
+      <div id="student-exam-panel" class="hidden space-y-4">
+        <!-- Header status ujian -->
+        <div class="bg-indigo-900 text-white p-4 rounded-xl flex items-center justify-between shadow-md">
+          <div>
+            <h3 id="active-exam-title" class="font-bold text-lg">Nama Ujian</h3>
+            <p id="active-exam-subject" class="text-xs text-indigo-300">Mata Pelajaran</p>
+          </div>
+          <div class="bg-indigo-800 border border-indigo-700 px-4 py-2 rounded-lg text-center">
+            <span class="text-xs text-indigo-300 block">Sisa Waktu</span>
+            <span id="exam-timer" class="font-mono text-xl font-bold text-amber-400">00:00</span>
+          </div>
+        </div>
+
+        <!-- Question Body -->
+        <div id="questions-display-container" class="space-y-4">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <button onclick="finishExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-lg shadow-lg transition flex items-center justify-center space-x-2">
+          <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+          <span>Selesai & Kumpulkan Ujian</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== 4. HALAMAN NILAI ==================== -->
+    <section id="page-nilai" class="hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+            <i data-lucide="award" class="w-5 h-5 text-indigo-600"></i>
+            <span>Rekapitulasi Nilai Siswa</span>
+          </h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+              <tr>
+                <th class="p-3">Siswa</th>
+                <th class="p-3">Ujian / Mapel</th>
+                <th class="p-3">Benar / Salah</th>
+                <th class="p-3">Nilai Akhir</th>
+                <th class="p-3">Waktu Selesai</th>
+              </tr>
+            </thead>
+            <tbody id="table-scores-body" class="divide-y divide-slate-200">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL ADD USER -->
+  <div id="modal-user" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <h3 class="text-lg font-bold text-slate-800 mb-4">Tambah Pengguna Baru</h3>
+      <form onsubmit="handleAddUser(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap</label>
+          <input type="text" id="new-fullname" required class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
+          <input type="text" id="new-username" required class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+          <input type="password" id="new-password" required class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Role / Hak Akses</label>
+          <select id="new-role" class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="admin">Administrator</option>
+            <option value="guru">Guru</option>
+            <option value="siswa">Siswa</option>
+          </select>
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t">
+          <button type="button" onclick="toggleUserModal(false)" class="px-4 py-2 bg-slate-200 rounded-lg text-xs font-semibold">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       STORAGE & DATABASE SIMULATION API
+       ========================================================================== */
+
+    // Inisialisasi Database Default
+    function initDatabase() {
+      if (!localStorage.getItem('cbt_users')) {
+        const defaultUsers = [
+          { id: '1', username: 'admin', password: '123', name: 'Administrator', role: 'admin' },
+          { id: '2', username: 'guru', password: '123', name: 'Bapak/Ibu Guru', role: 'guru' },
+          { id: '3', username: 'siswa', password: '123', name: 'Siswa Contoh', role: 'siswa' }
+        ];
+        localStorage.setItem('cbt_users', JSON.stringify(defaultUsers));
+      }
+
+      if (!localStorage.getItem('cbt_exams')) {
+        const defaultExams = [{
+          id: 'exam-1',
+          title: 'Ujian Akhir Semester Matematika',
+          subject: 'Matematika',
+          duration: 15,
+          questions: [
+            { id: 1, text: 'Berapakah hasil dari 12 + 15?', options: { A: '25', B: '27', C: '28', D: '30' }, answer: 'B' },
+            { id: 2, text: 'Berapakah akar kuadrat dari 81?', options: { A: '7', B: '8', C: '9', D: '10' }, answer: 'C' }
+          ]
+        }];
+        localStorage.setItem('cbt_exams', JSON.stringify(defaultExams));
+      }
+
+      if (!localStorage.getItem('cbt_scores')) {
+        localStorage.setItem('cbt_scores', JSON.stringify([]));
+      }
+    }
+
+    // Read Data
+    function getUsers() { return JSON.parse(localStorage.getItem('cbt_users')) || []; }
+    function getExams() { return JSON.parse(localStorage.getItem('cbt_exams')) || []; }
+    function getScores() { return JSON.parse(localStorage.getItem('cbt_scores')) || []; }
+    function getSession() { return JSON.parse(localStorage.getItem('cbt_session')); }
+
+    // State Variabel
+    let currentUser = null;
+    let tempQuestions = [];
+    let currentExamTimer = null;
+    let activeExamData = null;
+
+    /* ==========================================================================
+       AUTHENTICATION LOGIC
+       ========================================================================== */
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const role = document.getElementById('login-role').value;
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+
+      const users = getUsers();
+      // Mencari kecocokan username, password, dan role
+      const foundUser = users.find(u => u.username === username && u.password === password && u.role === role);
+
+      if (foundUser) {
+        currentUser = foundUser;
+        localStorage.setItem('cbt_session', JSON.stringify(foundUser));
+        showToast('Login berhasil! Selamat datang, ' + foundUser.name, 'success');
+        setupAppForLoggedInUser();
+      } else {
+        showToast('Username, Password, atau Role salah!', 'error');
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('cbt_session');
+      currentUser = null;
+      if (currentExamTimer) clearInterval(currentExamTimer);
+      showPage('page-login');
+      document.getElementById('main-header').classList.add('hidden');
+      showToast('Berhasil keluar dari sistem.', 'info');
+    }
+
+    function setupAppForLoggedInUser() {
+      if (!currentUser) return;
+
+      // Tampilkan Header Top
+      document.getElementById('main-header').classList.remove('hidden');
+      document.getElementById('user-display-name').innerText = currentUser.name;
+      document.getElementById('user-display-role').innerText = currentUser.role;
+
+      // Render Dynamic Navigation Tabs
+      const navMenu = document.getElementById('nav-menu');
+      navMenu.innerHTML = '';
+
+      if (currentUser.role === 'admin') {
+        navMenu.innerHTML += createNavButton('Admin Dashboard', 'page-admin', 'layout-dashboard');
+        navMenu.innerHTML += createNavButton('Halaman Guru', 'page-guru', 'pen-tool');
+        navMenu.innerHTML += createNavButton('Rekap Nilai', 'page-nilai', 'award');
+        showPage('page-admin');
+        renderAdminUsersTable();
+      } else if (currentUser.role === 'guru') {
+        navMenu.innerHTML += createNavButton('Halaman Guru', 'page-guru', 'pen-tool');
+        navMenu.innerHTML += createNavButton('Rekap Nilai', 'page-nilai', 'award');
+        showPage('page-guru');
+      } else if (currentUser.role === 'siswa') {
+        navMenu.innerHTML += createNavButton('Ujian Siswa', 'page-siswa', 'book-open');
+        showPage('page-siswa');
+        populateStudentExamSelect();
+      }
+
+      lucide.createIcons();
+    }
+
+    function createNavButton(label, pageId, iconName) {
+      return `
+        <button onclick="showPage('${pageId}')" class="flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-800 transition">
+          <i data-lucide="${iconName}" class="w-4 h-4"></i>
+          <span>${label}</span>
+        </button>
+      `;
+    }
+
+    /* ==========================================================================
+       NAVIGATION & PAGE DISPLAY CONTROL
+       ========================================================================== */
+
+    function showPage(pageId) {
+      const pages = ['page-login', 'page-admin', 'page-guru', 'page-siswa', 'page-nilai'];
+      pages.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+
+      const activePage = document.getElementById(pageId);
+      if (activePage) activePage.classList.remove('hidden');
+
+      // Refresh Data Rendering Sesuai Halaman
+      if (pageId === 'page-admin') renderAdminUsersTable();
+      if (pageId === 'page-nilai') renderScoresTable();
+      if (pageId === 'page-siswa') populateStudentExamSelect();
+    }
+
+    /* ==========================================================================
+       ADMIN FUNCTIONS
+       ========================================================================== */
+
+    function renderAdminUsersTable() {
+      const users = getUsers();
+      const tbody = document.getElementById('table-users-body');
+      tbody.innerHTML = '';
+
+      users.forEach(u => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-semibold text-slate-700">${u.name}</td>
+            <td class="p-3 text-slate-500">${u.username}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-bold ${u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : u.role === 'guru' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}">${u.role}</span></td>
+            <td class="p-3 text-right">
+              ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.id}')" class="text-rose-600 hover:text-rose-800 font-semibold text-xs">Hapus</button>` : '<span class="text-xs text-slate-400">System</span>'}
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function toggleUserModal(show) {
+      document.getElementById('modal-user').classList.toggle('hidden', !show);
+    }
+
+    function handleAddUser(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-fullname').value;
+      const username = document.getElementById('new-username').value;
+      const password = document.getElementById('new-password').value;
+      const role = document.getElementById('new-role').value;
+
+      const users = getUsers();
+      if (users.some(u => u.username === username)) {
+        showToast('Username sudah terpakai!', 'error');
+        return;
+      }
+
+      users.push({ id: Date.now().toString(), name, username, password, role });
+      localStorage.setItem('cbt_users', JSON.stringify(users));
+      toggleUserModal(false);
+      renderAdminUsersTable();
+      showToast('Pengguna berhasil ditambahkan', 'success');
+    }
+
+    function deleteUser(id) {
+      let users = getUsers().filter(u => u.id !== id);
+      localStorage.setItem('cbt_users', JSON.stringify(users));
+      renderAdminUsersTable();
+      showToast('User berhasil dihapus', 'info');
+    }
+
+    function resetServerData() {
+      if (confirm('Apakah Anda yakin ingin menghapus seluruh data sistem? Data akan kembali ke default.')) {
+        localStorage.clear();
+        initDatabase();
+        alert('Data berhasil di-reset!');
+        location.reload();
+      }
+    }
+
+    /* ==========================================================================
+       GURU FUNCTIONS (EXAM CREATION)
+       ========================================================================== */
+
+    function addQuestionToList() {
+      const qText = document.getElementById('question-text').value.trim();
+      const optA = document.getElementById('opt-a').value.trim();
+      const optB = document.getElementById('opt-b').value.trim();
+      const optC = document.getElementById('opt-c').value.trim();
+      const optD = document.getElementById('opt-d').value.trim();
+      const correct = document.getElementById('correct-opt').value;
+
+      if (!qText || !optA || !optB || !optC || !optD) {
+        showToast('Mohon lengkapi pertanyaan dan semua opsi jawaban!', 'error');
+        return;
+      }
+
+      tempQuestions.push({
+        id: tempQuestions.length + 1,
+        text: qText,
+        options: { A: optA, B: optB, C: optC, D: optD },
+        answer: correct
+      });
+
+      // Clear Form Input
+      document.getElementById('question-text').value = '';
+      document.getElementById('opt-a').value = '';
+      document.getElementById('opt-b').value = '';
+      document.getElementById('opt-c').value = '';
+      document.getElementById('opt-d').value = '';
+
+      renderTempQuestions();
+      showToast('Soal berhasil ditambahkan ke daftar!', 'success');
+    }
+
+    function renderTempQuestions() {
+      const container = document.getElementById('temp-questions-list');
+      document.getElementById('temp-q-count').innerText = tempQuestions.length;
+
+      if (tempQuestions.length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-sm italic">Belum ada soal yang ditambahkan.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      tempQuestions.forEach((q, idx) => {
+        container.innerHTML += `
+          <div class="p-3 bg-white border border-slate-200 rounded-lg flex justify-between items-center text-sm">
+            <div>
+              <p class="font-bold text-slate-700">${idx + 1}. ${q.text}</p>
+              <p class="text-xs text-emerald-600 font-semibold">Kunci: ${q.answer}</p>
+            </div>
+            <button onclick="removeTempQuestion(${idx})" class="text-rose-600 text-xs font-semibold">Hapus</button>
+          </div>
+        `;
+      });
+    }
+
+    function removeTempQuestion(index) {
+      tempQuestions.splice(index, 1);
+      renderTempQuestions();
+    }
+
+    function handleSaveExam(e) {
+      e.preventDefault();
+      if (tempQuestions.length === 0) {
+        showToast('Tambahkan minimal 1 soal sebelum menyimpan!', 'error');
+        return;
+      }
+
+      const exams = getExams();
+      const newExam = {
+        id: 'exam-' + Date.now(),
+        title: document.getElementById('exam-title').value,
+        subject: document.getElementById('exam-subject').value,
+        duration: parseInt(document.getElementById('exam-duration').value),
+        questions: [...tempQuestions]
+      };
+
+      exams.push(newExam);
+      localStorage.setItem('cbt_exams', JSON.stringify(exams));
+
+      // Reset
+      tempQuestions = [];
+      renderTempQuestions();
+      document.getElementById('form-exam').reset();
+      showToast('Paket Ujian Berhasil Diterbitkan!', 'success');
+    }
+
+    /* ==========================================================================
+       SISWA FUNCTIONS (TAKING EXAM)
+       ========================================================================== */
+
+    function populateStudentExamSelect() {
+      const exams = getExams();
+      const select = document.getElementById('student-exam-select');
+      select.innerHTML = '';
+
+      if (exams.length === 0) {
+        select.innerHTML = '<option value="">Belum ada ujian tersedia</option>';
+        return;
+      }
+
+      exams.forEach(ex => {
+        select.innerHTML += `<option value="${ex.id}">${ex.title} (${ex.subject}) - ${ex.duration} Menit</option>`;
+      });
+    }
+
+    function startExam(e) {
+      e.preventDefault();
+      const examId = document.getElementById('student-exam-select').value;
+      const exams = getExams();
+      activeExamData = exams.find(x => x.id === examId);
+
+      if (!activeExamData) {
+        showToast('Pilih ujian terlebih dahulu!', 'error');
+        return;
+      }
+
+      // Sembunyikan panel persiapan, tampilkan panel ujian
+      document.getElementById('student-prep-panel').classList.add('hidden');
+      document.getElementById('student-exam-panel').classList.remove('hidden');
+
+      document.getElementById('active-exam-title').innerText = activeExamData.title;
+      document.getElementById('active-exam-subject').innerText = activeExamData.subject;
+
+      // Render Soal
+      renderExamQuestions(activeExamData.questions);
+
+      // Jalankan Timer
+      startTimer(activeExamData.duration * 60);
+    }
+
+    function renderExamQuestions(questions) {
+      const container = document.getElementById('questions-display-container');
+      container.innerHTML = '';
+
+      questions.forEach((q, idx) => {
+        container.innerHTML += `
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <p class="font-semibold text-slate-800 text-base">${idx + 1}. ${q.text}</p>
+            <div class="space-y-2">
+              ${Object.entries(q.options).map(([key, val]) => `
+                <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+                  <input type="radio" name="question_${q.id}" value="${key}" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-sm font-medium text-slate-700"><strong>${key}.</strong>${val}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function startTimer(durationSeconds) {
+      let timer = durationSeconds;
+      const display = document.getElementById('exam-timer');
+
+      if (currentExamTimer) clearInterval(currentExamTimer);
+
+      currentExamTimer = setInterval(() => {
+        let minutes = parseInt(timer / 60, 10);
+        let seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) {
+          clearInterval(currentExamTimer);
+          alert('Waktu ujian telah habis! Jawaban Anda akan otomatis tersimpan.');
+          finishExam();
+        }
+      }, 1000);
+    }
+
+    function finishExam() {
+      if (currentExamTimer) clearInterval(currentExamTimer);
+
+      let correctCount = 0;
+      let wrongCount = 0;
+      const totalQuestions = activeExamData.questions.length;
+
+      activeExamData.questions.forEach(q => {
+        const selected = document.querySelector(`input[name="question_${q.id}"]:checked`);
+        if (selected && selected.value === q.answer) {
+          correctCount++;
+        } else {
+          wrongCount++;
+        }
+      });
+
+      const finalScore = Math.round((correctCount / totalQuestions) * 100);
+
+      // Simpan Nilai ke LocalStorage
+      const scores = getScores();
+      scores.push({
+        id: 'score-' + Date.now(),
+        studentName: currentUser.name,
+        subject: activeExamData.subject,
+        examTitle: activeExamData.title,
+        correct: correctCount,
+        wrong: wrongCount,
+        score: finalScore,
+        date: new Date().toLocaleString('id-ID')
+      });
+      localStorage.setItem('cbt_scores', JSON.stringify(scores));
+
+      alert(`Ujian Selesai!\nNilai Anda: ${finalScore}\n(Benar: ${correctCount}, Salah: ${wrongCount})`);
+
+      // Reset Tampilan Siswa
+      document.getElementById('student-exam-panel').classList.add('hidden');
+      document.getElementById('student-prep-panel').classList.remove('hidden');
+      showPage('page-nilai');
+    }
+
+    /* ==========================================================================
+       REKAP NILAI FUNCTIONS
+       ========================================================================== */
+
+    function renderScoresTable() {
+      const scores = getScores();
+      const tbody = document.getElementById('table-scores-body');
+      tbody.innerHTML = '';
+
+      if (scores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada data nilai ujian.</td></tr>';
+        return;
+      }
+
+      scores.forEach(s => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-semibold text-slate-800">${s.studentName}</td>
+            <td class="p-3"><div class="font-medium text-slate-700">${s.examTitle}</div><div class="text-xs text-slate-400">${s.subject}</div></td>
+            <td class="p-3"><span class="text-emerald-600 font-bold">${s.correct} Benar</span> / <span class="text-rose-600 font-bold">${s.wrong} Salah</span></td>
+            <td class="p-3"><span class="text-base font-extrabold ${s.score >= 70 ? 'text-indigo-600' : 'text-rose-600'}">${s.score}</span></td>
+            <td class="p-3 text-xs text-slate-400">${s.date}</td>
+          </tr>
+        `;
+      });
+    }
+
+    /* ==========================================================================
+       NOTIFICATION UTILITY
+       ========================================================================== */
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const bgColor = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-indigo-600';
+
+      toast.className = `${bgColor} text-white px-4 py-2.5 rounded-lg shadow-lg text-sm flex items-center space-x-2 transition-all duration-300 pointer-events-auto opacity-0 transform translate-y-2`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    /* ==========================================================================
+       INITIALIZATION ON LOAD
+       ========================================================================== */
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabase();
+      
+      // Check Existing Session
+      const savedSession = getSession();
+      if (savedSession) {
+        currentUser = savedSession;
+        setupAppForLoggedInUser();
+      } else {
+        showPage('page-login');
+      }
+
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
